@@ -33,6 +33,20 @@ local math_rad = math.rad
 local table_insert = table.insert
 local string_format = string.format
 
+-- // Helper: create instance with properties table
+local function create_instance(class_name, properties, parent)
+    local inst = Instance_new(class_name)
+    if properties then
+        for prop, val in pairs(properties) do
+            inst[prop] = val
+        end
+    end
+    if parent then
+        inst.Parent = parent
+    end
+    return inst
+end
+
 -- // Themes
 local Themes = {
     Default = {
@@ -262,71 +276,76 @@ function UI:Notification(message, duration, color)
     notif_ui.IgnoreGuiInset = true
     notif_ui.Parent = CoreGui
     
-    local base_position = Vector2.new(25, 65 + (#UI.notifications * 25))
+    local base_position = Vector2_new(25, 65 + (#UI.notifications * 25))
     
-    local notifcontainer = Instance_new("Frame")
-    notifcontainer.Name = "container"
-    notifcontainer.Position = UDim2_new(0, base_position.X, 0, base_position.Y)
-    notifcontainer.AutomaticSize = Enum.AutomaticSize.X
-    notifcontainer.Size = UDim2_new(0, 0, 0, 18)
-    notifcontainer.BackgroundTransparency = 1
-    notifcontainer.BorderSizePixel = 0
-    notifcontainer.ZIndex = 99999999
-    notifcontainer.Parent = notif_ui
+    local notifcontainer = create_instance("Frame", {
+        Name = "container",
+        Position = UDim2_new(0, base_position.X, 0, base_position.Y),
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = UDim2_new(0, 0, 0, 18),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ZIndex = 99999999,
+    }, notif_ui)
     notification.Container = notifcontainer
     
-    local outline = Instance_new("Frame")
-    outline.Name = "outline"
-    outline.AutomaticSize = Enum.AutomaticSize.X
-    outline.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    outline.Position = UDim2_new(0.01, 0, 0.02, 0)
-    outline.Size = UDim2_new(0, 0, 0, 18)
-    outline.Parent = notifcontainer
-    outline.BackgroundTransparency = 1
+    local outline = create_instance("Frame", {
+        Name = "outline",
+        AutomaticSize = Enum.AutomaticSize.X,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        Position = UDim2_new(0.01, 0, 0.02, 0),
+        Size = UDim2_new(0, 0, 0, 18),
+        Parent = notifcontainer,
+        BackgroundTransparency = 1,
+    })
     table.insert(notification.Objects, outline)
     UI:AttachTheme(outline, { BackgroundColor3 = "background" })
     
-    local inline = Instance_new("Frame")
-    inline.Name = "inline"
-    inline.BackgroundColor3 = Color3_fromRGB(5, 5, 5)
-    inline.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    inline.BorderSizePixel = 0
-    inline.Position = UDim2_new(0, 1, 0, 0)
-    inline.Size = UDim2_new(1, 0, 1, -1)
-    inline.BackgroundTransparency = 1
-    inline.Parent = outline
+    local inline = create_instance("Frame", {
+        Name = "inline",
+        BackgroundColor3 = Color3_fromRGB(5, 5, 5),
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0, 1, 0, 0),
+        Size = UDim2_new(1, 0, 1, -1),
+        BackgroundTransparency = 1,
+        Parent = outline,
+    })
     table.insert(notification.Objects, inline)
     UI:AttachTheme(inline, { BackgroundColor3 = "background" })
     
-    local value = Instance_new("TextLabel")
-    value.Name = "text"
-    value.Text = message
-    value.TextColor3 = Color3_fromRGB(255, 255, 255)
-    value.TextStrokeTransparency = 0
-    value.TextXAlignment = Enum.TextXAlignment.Left
-    value.AutomaticSize = Enum.AutomaticSize.X
-    value.BackgroundTransparency = 1
-    value.Size = UDim2_new(0, 0, 1, 0)
-    value.TextTransparency = 1
-    value.Parent = inline
-    value.FontFace = UI.font
-    value.TextSize = UI.font_size
+    local value = create_instance("TextLabel", {
+        Name = "text",
+        Text = message,
+        TextColor3 = Color3_fromRGB(255, 255, 255),
+        TextStrokeTransparency = 0,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        AutomaticSize = Enum.AutomaticSize.X,
+        BackgroundTransparency = 1,
+        Size = UDim2_new(0, 0, 1, 0),
+        TextTransparency = 1,
+        Parent = inline,
+        FontFace = UI.font,
+        TextSize = UI.font_size,
+    })
     table.insert(notification.Objects, value)
     
-    local uipadding = Instance_new("UIPadding")
-    uipadding.PaddingLeft = UDim_new(0, 5)
-    uipadding.PaddingRight = UDim_new(0, 5)
-    uipadding.PaddingTop = UDim_new(0, 1)
-    uipadding.Parent = value
+    local uipadding = create_instance("UIPadding", {
+        PaddingLeft = UDim_new(0, 5),
+        PaddingRight = UDim_new(0, 5),
+        PaddingTop = UDim_new(0, 1),
+        Parent = value,
+    })
     
-    local time_line = Instance_new("Frame")
-    time_line.Name = "timeline"
-    time_line.BorderSizePixel = 0
-    time_line.Size = UDim2_new(0, 0, 1, 0)
-    time_line.Parent = outline
-    time_line.BackgroundTransparency = 1
-    time_line.BackgroundColor3 = color
-    time_line.ZIndex = -1
+    local time_line = create_instance("Frame", {
+        Name = "timeline",
+        BorderSizePixel = 0,
+        Size = UDim2_new(0, 0, 1, 0),
+        Parent = outline,
+        BackgroundTransparency = 1,
+        BackgroundColor3 = color,
+        ZIndex = -1,
+    })
     table.insert(notification.Objects, time_line)
     
     function notification:remove()
@@ -352,13 +371,13 @@ function UI:Notification(message, duration, color)
     end
     
     task.spawn(function()
-        outline.AnchorPoint = Vector2.new(1, 0)
+        outline.AnchorPoint = Vector2_new(1, 0)
         for _, v in next, notification.Objects do
             if v:IsA("Frame") or v:IsA("ImageLabel") then
                 TweenService:Create(v, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
             end
         end
-        TweenService:Create(outline, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {AnchorPoint = Vector2.new(0, 0)}):Play()
+        TweenService:Create(outline, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {AnchorPoint = Vector2_new(0, 0)}):Play()
         TweenService:Create(value, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
         TweenService:Create(time_line, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {Size = UDim2_new(1, 0, 1, 0)}):Play()
         task.wait(duration)
@@ -371,230 +390,247 @@ end
 
 -- // Color Picker
 function UI:NewPicker(name, default, defaultalpha, parent, count, flag, callback)
-    local Icon = Instance_new("TextButton")
-    local color_name = Instance_new("TextLabel")
-    local Outline4 = Instance_new("Frame")
-    local ColorWindow = Instance_new("Frame")
-    local ColorInline = Instance_new("Frame")
-    local Color = Instance_new("TextButton")
-    local Sat = Instance_new("ImageLabel")
-    local Val = Instance_new("ImageLabel")
-    local Hue = Instance_new("ImageButton")
-    local Alpha = Instance_new("ImageButton")
-    local Color_Circle = Instance_new("TextButton")
-    local Alpha_Bg = Instance_new("ImageLabel")
-    local text_color = Instance_new("TextButton")
-    local text_color2 = Instance_new("TextButton")
-    
-    Icon.Name = "Icon_Colorpicker"
-    Icon.AnchorPoint = Vector2.new(0, 0.5)
-    Icon.BackgroundColor3 = default
-    Icon.BorderColor3 = Color3_fromRGB(36, 36, 36)
-    Icon.BorderSizePixel = 1
-    local spacing = 3
+    local Icon = create_instance("TextButton", {
+        Name = "Icon_Colorpicker",
+        AnchorPoint = Vector2_new(0, 0.5),
+        BackgroundColor3 = default,
+        BorderColor3 = Color3_fromRGB(36, 36, 36),
+        BorderSizePixel = 1,
+        Text = "",
+        ZIndex = 99,
+        AutoButtonColor = false,
+        Parent = parent,
+    }, parent)
     if count == 1 then
         Icon.Position = UDim2_new(1, -(count * 18), 0.5, 0)
     else
+        local spacing = 3
         Icon.Position = UDim2_new(1, -(count * 16) - (count * spacing), 0.5, 0)
     end
     Icon.Size = UDim2_new(0, 16, 0, 16)
-    Icon.Text = ""
-    Icon.ZIndex = 99
-    Icon.AutoButtonColor = false
-    Icon.Parent = parent
     
-    Instance_new("UICorner", { Parent = Icon, CornerRadius = UDim_new(1, 0) })
+    create_instance("UICorner", { Parent = Icon, CornerRadius = UDim_new(1, 0) })
     
-    Outline4.Name = "Outline"
-    Outline4.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    Outline4.BackgroundTransparency = 1
-    Outline4.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    Outline4.BorderSizePixel = 0
-    Outline4.Position = UDim2_new(0, -1, 0, -1)
-    Outline4.Size = UDim2_new(1, 2, 1, 2)
-    Outline4.ZIndex = 99
-    Outline4.Parent = Icon
+    local Outline4 = create_instance("Frame", {
+        Name = "Outline",
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0, -1, 0, -1),
+        Size = UDim2_new(1, 2, 1, 2),
+        ZIndex = 99,
+        Parent = Icon,
+    })
     
-    ColorWindow.Name = "ColorWindow"
-    ColorWindow.AnchorPoint = Vector2.new(0.5, 0.5)
-    ColorWindow.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    ColorWindow.Position = UDim2_new(1, 0, 1, 2)
-    ColorWindow.AnchorPoint = Vector2.new(1, 0)
-    ColorWindow.Size = UDim2_new(0, 180, 0, 220)
-    ColorWindow.ZIndex = 99
-    ColorWindow.Visible = false
-    ColorWindow.Parent = Icon
+    local ColorWindow = create_instance("Frame", {
+        Name = "ColorWindow",
+        AnchorPoint = Vector2_new(0.5, 0.5),
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        Position = UDim2_new(1, 0, 1, 2),
+        AnchorPoint = Vector2_new(1, 0),
+        Size = UDim2_new(0, 180, 0, 220),
+        ZIndex = 99,
+        Visible = false,
+        Parent = Icon,
+    })
     UI:AttachTheme(ColorWindow, { BackgroundColor3 = "outline" })
-    Instance_new("UICorner", { Parent = ColorWindow, CornerRadius = UDim_new(0, 6) })
+    create_instance("UICorner", { Parent = ColorWindow, CornerRadius = UDim_new(0, 6) })
     
-    ColorInline.Name = "ColorInline"
-    ColorInline.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    ColorInline.BorderSizePixel = 0
-    ColorInline.Position = UDim2_new(0, 1, 0, 1)
-    ColorInline.Size = UDim2_new(1, -2, 1, -2)
-    ColorInline.BackgroundTransparency = 1
-    ColorInline.Parent = ColorWindow
+    local ColorInline = create_instance("Frame", {
+        Name = "ColorInline",
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0, 1, 0, 1),
+        Size = UDim2_new(1, -2, 1, -2),
+        BackgroundTransparency = 1,
+        Parent = ColorWindow,
+    })
     UI:AttachTheme(ColorInline, { BackgroundColor3 = "background" })
-    Instance_new("UICorner", { Parent = ColorInline, CornerRadius = UDim_new(0, 6) })
+    create_instance("UICorner", { Parent = ColorInline, CornerRadius = UDim_new(0, 6) })
     
-    color_name.BackgroundTransparency = 1
-    color_name.Text = name
-    color_name.TextXAlignment = Enum.TextXAlignment.Left
-    color_name.TextColor3 = Color3_fromRGB(255, 255, 255)
-    color_name.Position = UDim2_new(0, 8, 0, 5)
-    color_name.Size = UDim2_new(1, -10, 0, 20)
-    color_name.TextSize = UI.font_size
-    color_name.FontFace = UI.font
-    color_name.TextStrokeTransparency = 0
-    color_name.Parent = ColorInline
+    local color_name = create_instance("TextLabel", {
+        BackgroundTransparency = 1,
+        Text = name,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextColor3 = Color3_fromRGB(255, 255, 255),
+        Position = UDim2_new(0, 8, 0, 5),
+        Size = UDim2_new(1, -10, 0, 20),
+        TextSize = UI.font_size,
+        FontFace = UI.font,
+        TextStrokeTransparency = 0,
+        Parent = ColorInline,
+    })
     
-    text_color.Name = "Text Color"
-    text_color.FontFace = UI.font
-    text_color.TextColor3 = Color3_fromRGB(155, 155, 155)
-    text_color.Parent = ColorInline
-    text_color.TextStrokeTransparency = 0
-    text_color.TextSize = UI.font_size
-    text_color.AutoButtonColor = false
-    text_color.Position = UDim2_new(0, 7, 1, -17)
-    text_color.Size = UDim2_new(0, 76, 0, 12)
+    local text_color = create_instance("TextButton", {
+        Name = "Text Color",
+        FontFace = UI.font,
+        TextColor3 = Color3_fromRGB(155, 155, 155),
+        Parent = ColorInline,
+        TextStrokeTransparency = 0,
+        TextSize = UI.font_size,
+        AutoButtonColor = false,
+        Position = UDim2_new(0, 7, 1, -17),
+        Size = UDim2_new(0, 76, 0, 12),
+    })
     UI:AttachTheme(text_color, { BackgroundColor3 = "background" })
     UI:AttachTheme(text_color, { BorderColor3 = "outline" })
     
-    text_color2.Name = "Text Color 2"
-    text_color2.FontFace = UI.font
-    text_color2.TextColor3 = Color3_fromRGB(155, 155, 155)
-    text_color2.Parent = ColorInline
-    text_color2.TextStrokeTransparency = 0
-    text_color2.TextSize = UI.font_size
-    text_color2.AutoButtonColor = false
-    text_color2.Position = UDim2_new(0, 90, 1, -17)
-    text_color2.Size = UDim2_new(0, 80, 0, 12)
+    local text_color2 = create_instance("TextButton", {
+        Name = "Text Color 2",
+        FontFace = UI.font,
+        TextColor3 = Color3_fromRGB(155, 155, 155),
+        Parent = ColorInline,
+        TextStrokeTransparency = 0,
+        TextSize = UI.font_size,
+        AutoButtonColor = false,
+        Position = UDim2_new(0, 90, 1, -17),
+        Size = UDim2_new(0, 80, 0, 12),
+    })
     UI:AttachTheme(text_color2, { BackgroundColor3 = "background" })
     UI:AttachTheme(text_color2, { BorderColor3 = "outline" })
     
-    local text_color_outline = Instance_new("Frame")
-    text_color_outline.Name = "Outline"
-    text_color_outline.BackgroundTransparency = 1
-    text_color_outline.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    text_color_outline.BorderSizePixel = 0
-    text_color_outline.Position = UDim2_new(0, -1, 0, -1)
-    text_color_outline.Size = UDim2_new(1, 2, 1, 2)
-    text_color_outline.ZIndex = 99
-    text_color_outline.Parent = text_color
+    local text_color_outline = create_instance("Frame", {
+        Name = "Outline",
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0, -1, 0, -1),
+        Size = UDim2_new(1, 2, 1, 2),
+        ZIndex = 99,
+        Parent = text_color,
+    })
     local text_color_outline2 = text_color_outline:Clone()
     text_color_outline2.Parent = text_color2
     
-    Color.Name = "Color"
-    Color.FontFace = UI.font
-    Color.Text = ""
-    Color.TextColor3 = Color3_fromRGB(0, 0, 0)
-    Color.TextSize = UI.font_size
-    Color.AutoButtonColor = false
-    Color.BackgroundColor3 = default
-    Color.Position = UDim2_new(0, 6, 0, 30)
-    Color.Size = UDim2_new(0, 145, 1, -74)
+    local Color = create_instance("TextButton", {
+        Name = "Color",
+        FontFace = UI.font,
+        Text = "",
+        TextColor3 = Color3_fromRGB(0, 0, 0),
+        TextSize = UI.font_size,
+        AutoButtonColor = false,
+        BackgroundColor3 = default,
+        Position = UDim2_new(0, 6, 0, 30),
+        Size = UDim2_new(0, 145, 1, -74),
+        Parent = ColorInline,
+    })
     UI:AttachTheme(Color, { BorderColor3 = "background" })
-    Instance_new("UICorner", { Parent = Color, CornerRadius = UDim_new(0, 7) })
-    Color.Parent = ColorInline
+    create_instance("UICorner", { Parent = Color, CornerRadius = UDim_new(0, 7) })
     
-    Color_Circle.Name = "CircleButton"
-    Color_Circle.FontFace = UI.font
-    Color_Circle.Text = ""
-    Color_Circle.TextColor3 = Color3_fromRGB(0, 0, 0)
-    Color_Circle.TextSize = UI.font_size
-    Color_Circle.AutoButtonColor = false
-    Color_Circle.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    Color_Circle.Position = UDim2_new(0.5, -25, 0.5, -25)
-    Color_Circle.Size = UDim2_new(0, 7, 0, 7)
-    Color_Circle.Parent = Color
-    Color_Circle.ZIndex = 9
+    local Color_Circle = create_instance("TextButton", {
+        Name = "CircleButton",
+        FontFace = UI.font,
+        Text = "",
+        TextColor3 = Color3_fromRGB(0, 0, 0),
+        TextSize = UI.font_size,
+        AutoButtonColor = false,
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        Position = UDim2_new(0.5, -25, 0.5, -25),
+        Size = UDim2_new(0, 7, 0, 7),
+        Parent = Color,
+        ZIndex = 9,
+    })
     UI:AttachTheme(Color_Circle, { BorderColor3 = "background" })
-    Instance_new("UICorner", { Parent = Color_Circle, CornerRadius = UDim_new(1, 0) })
+    create_instance("UICorner", { Parent = Color_Circle, CornerRadius = UDim_new(1, 0) })
     
-    Sat.Name = "Sat"
-    Sat.Image = "http://www.roblox.com/asset/?id=14684562507"
-    Sat.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    Sat.BackgroundTransparency = 1
-    Sat.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    Sat.BorderSizePixel = 0
-    Sat.Size = UDim2_new(1, 0, 1, 0)
-    Sat.Parent = Color
-    Instance_new("UICorner", { Parent = Sat, CornerRadius = UDim_new(0, 6) })
+    local Sat = create_instance("ImageLabel", {
+        Name = "Sat",
+        Image = "http://www.roblox.com/asset/?id=14684562507",
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2_new(1, 0, 1, 0),
+        Parent = Color,
+    })
+    create_instance("UICorner", { Parent = Sat, CornerRadius = UDim_new(0, 6) })
     
-    Val.Name = "Val"
-    Val.Image = "http://www.roblox.com/asset/?id=14684563800"
-    Val.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    Val.BackgroundTransparency = 1
-    Val.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    Val.BorderSizePixel = 0
-    Val.Size = UDim2_new(1, 0, 1, 0)
-    Val.Parent = Color
-    Instance_new("UICorner", { Parent = Val, CornerRadius = UDim_new(0, 6) })
+    local Val = create_instance("ImageLabel", {
+        Name = "Val",
+        Image = "http://www.roblox.com/asset/?id=14684563800",
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2_new(1, 0, 1, 0),
+        Parent = Color,
+    })
+    create_instance("UICorner", { Parent = Val, CornerRadius = UDim_new(0, 6) })
     
-    local Outline = Instance_new("Frame")
-    Outline.Name = "Outline"
-    Outline.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    Outline.BackgroundTransparency = 1
-    Outline.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    Outline.BorderSizePixel = 0
-    Outline.Position = UDim2_new(0, -1, 0, -1)
-    Outline.Size = UDim2_new(1, 2, 1, 2)
-    Outline.Parent = Color
+    local Outline = create_instance("Frame", {
+        Name = "Outline",
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0, -1, 0, -1),
+        Size = UDim2_new(1, 2, 1, 2),
+        Parent = Color,
+    })
     
-    Alpha.Name = "Alpha"
-    Alpha.Image = "http://www.roblox.com/asset/?id=15486053510"
-    Alpha.AutoButtonColor = false
-    Alpha.BackgroundTransparency = 1
-    Alpha.ImageTransparency = 0.03
-    Alpha.BorderSizePixel = 0
-    Alpha.Position = UDim2_new(1, -18, 0, 30)
-    Alpha.Size = UDim2_new(0, 10, 1, -74)
-    Alpha.Parent = ColorInline
+    local Alpha = create_instance("ImageButton", {
+        Name = "Alpha",
+        Image = "http://www.roblox.com/asset/?id=15486053510",
+        AutoButtonColor = false,
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.03,
+        BorderSizePixel = 0,
+        Position = UDim2_new(1, -18, 0, 30),
+        Size = UDim2_new(0, 10, 1, -74),
+        Parent = ColorInline,
+    })
     UI:AttachTheme(Alpha, { BackgroundColor3 = "background" })
-    Instance_new("UICorner", { Parent = Alpha, CornerRadius = UDim_new(0, 5) })
+    create_instance("UICorner", { Parent = Alpha, CornerRadius = UDim_new(0, 5) })
     
-    Alpha_Bg.Name = "alpha_bg"
-    Alpha_Bg.ZIndex = -1
-    Alpha_Bg.Image = "http://www.roblox.com/asset/?id=4879903999"
-    Alpha_Bg.BackgroundTransparency = 1
-    Alpha_Bg.ScaleType = Enum.ScaleType.Crop
-    Alpha_Bg.ImageColor3 = Color3_fromRGB(255, 255, 255)
-    Alpha_Bg.BorderSizePixel = 0
-    Alpha_Bg.Position = UDim2_new(1, -18, 0, 68)
-    Alpha_Bg.Size = UDim2_new(0, 10, 1, -114)
-    Alpha_Bg.Parent = ColorInline
-    Instance_new("UICorner", { Parent = Alpha_Bg, CornerRadius = UDim_new(0, 5) })
+    local Alpha_Bg = create_instance("ImageLabel", {
+        Name = "alpha_bg",
+        ZIndex = -1,
+        Image = "http://www.roblox.com/asset/?id=4879903999",
+        BackgroundTransparency = 1,
+        ScaleType = Enum.ScaleType.Crop,
+        ImageColor3 = Color3_fromRGB(255, 255, 255),
+        BorderSizePixel = 0,
+        Position = UDim2_new(1, -18, 0, 68),
+        Size = UDim2_new(0, 10, 1, -114),
+        Parent = ColorInline,
+    })
+    create_instance("UICorner", { Parent = Alpha_Bg, CornerRadius = UDim_new(0, 5) })
     
-    local Outline1 = Instance_new("Frame")
-    Outline1.Name = "Outline"
-    Outline1.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    Outline1.BackgroundTransparency = 1
-    Outline1.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    Outline1.BorderSizePixel = 0
-    Outline1.Position = UDim2_new(0, -1, 0, -1)
-    Outline1.Size = UDim2_new(1, 2, 1, 2)
-    Outline1.Parent = Alpha
+    local Outline1 = create_instance("Frame", {
+        Name = "Outline",
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0, -1, 0, -1),
+        Size = UDim2_new(1, 2, 1, 2),
+        Parent = Alpha,
+    })
     
-    Hue.Name = "Hue"
-    Hue.Image = "http://www.roblox.com/asset/?id=138435236878653"
-    Hue.AutoButtonColor = false
-    Hue.BackgroundColor3 = Color3_fromRGB(200, 200, 200)
-    Hue.BorderColor3 = Color3_fromRGB(17, 17, 17)
-    Hue.Position = UDim2_new(0, 7, 1, -35)
-    Hue.Size = UDim2_new(0, 164, 0, 10)
-    Hue.Parent = ColorInline
+    local Hue = create_instance("ImageButton", {
+        Name = "Hue",
+        Image = "http://www.roblox.com/asset/?id=138435236878653",
+        AutoButtonColor = false,
+        BackgroundColor3 = Color3_fromRGB(200, 200, 200),
+        BorderColor3 = Color3_fromRGB(17, 17, 17),
+        Position = UDim2_new(0, 7, 1, -35),
+        Size = UDim2_new(0, 164, 0, 10),
+        Parent = ColorInline,
+    })
     UI:AttachTheme(Hue, { BackgroundColor3 = "background" })
-    Instance_new("UICorner", { Parent = Hue, CornerRadius = UDim_new(0, 5) })
+    create_instance("UICorner", { Parent = Hue, CornerRadius = UDim_new(0, 5) })
     
-    local Outline2 = Instance_new("Frame")
-    Outline2.Name = "Outline"
-    Outline2.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    Outline2.BackgroundTransparency = 1
-    Outline2.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    Outline2.BorderSizePixel = 0
-    Outline2.Position = UDim2_new(0, -1, 0, -1)
-    Outline2.Size = UDim2_new(1, 2, 1, 2)
-    Outline2.Parent = Hue
+    local Outline2 = create_instance("Frame", {
+        Name = "Outline",
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0, -1, 0, -1),
+        Size = UDim2_new(1, 2, 1, 2),
+        Parent = Hue,
+    })
     
     -- // Color Picker Logic
     local mouseover = false
@@ -755,48 +791,52 @@ function UI:window(options)
     menu.DisplayOrder = 10
     UI.menu_gui = menu
     
-    local background = Instance_new("TextButton")
-    background.Name = "background"
-    background.Parent = menu
-    background.Text = ""
-    background.AutoButtonColor = false
-    background.AnchorPoint = Vector2_new(0.5, 0.5)
-    background.Position = UDim2_new(0.5, 0, 0.5, 0)
-    background.BorderSizePixel = 1
-    background.Size = window.size
-    background.ZIndex = 9999
+    local background = create_instance("TextButton", {
+        Name = "background",
+        Parent = menu,
+        Text = "",
+        AutoButtonColor = false,
+        AnchorPoint = Vector2_new(0.5, 0.5),
+        Position = UDim2_new(0.5, 0, 0.5, 0),
+        BorderSizePixel = 1,
+        Size = window.size,
+        ZIndex = 9999,
+    }, menu)
     UI:AttachTheme(background, { BackgroundColor3 = "background" })
     UI:AttachTheme(background, { BorderColor3 = "outline" })
     
-    local background2 = Instance_new("Frame")
-    background2.Name = "background2"
-    background2.Parent = background
-    background2.AnchorPoint = Vector2_new(0.5, 0.5)
-    background2.Position = UDim2_new(0.5, 0, 0.5, 0)
-    background2.Size = UDim2_new(1, 0, 1, 0)
-    background2.BorderColor3 = Color3_fromRGB(40, 40, 40)
-    background2.BorderSizePixel = 2
-    background2.ZIndex = -1
+    local background2 = create_instance("Frame", {
+        Name = "background2",
+        Parent = background,
+        AnchorPoint = Vector2_new(0.5, 0.5),
+        Position = UDim2_new(0.5, 0, 0.5, 0),
+        Size = UDim2_new(1, 0, 1, 0),
+        BorderColor3 = Color3_fromRGB(40, 40, 40),
+        BorderSizePixel = 2,
+        ZIndex = -1,
+    }, background)
     UI:AttachTheme(background2, { BackgroundColor3 = "background" })
     
-    local tabs_holder = Instance_new("Frame")
-    tabs_holder.Name = "tabs_holder"
-    tabs_holder.BackgroundTransparency = 1
-    tabs_holder.BorderColor3 = Color3_fromRGB(0, 0, 0)
-    tabs_holder.BorderSizePixel = 0
-    tabs_holder.Size = UDim2_new(0, 80, 0, 500)
-    tabs_holder.Parent = background
+    local tabs_holder = create_instance("Frame", {
+        Name = "tabs_holder",
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3_fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2_new(0, 80, 0, 500),
+        Parent = background,
+    })
     UI:AttachTheme(tabs_holder, { BackgroundColor3 = "background" })
     
-    local page_holder = Instance_new("Frame")
-    page_holder.Name = "page_holder"
-    page_holder.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-    background2.BackgroundTransparency = 1.000
-    page_holder.BorderColor3 = Color3_fromRGB(255, 255, 255)
-    page_holder.BorderSizePixel = 0
-    page_holder.Position = UDim2_new(0.138, 0, 0, 13)
-    page_holder.Size = UDim2_new(0, 640, 0, 470)
-    page_holder.Parent = background
+    local page_holder = create_instance("Frame", {
+        Name = "page_holder",
+        BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+        BackgroundTransparency = 1.000,
+        BorderColor3 = Color3_fromRGB(255, 255, 255),
+        BorderSizePixel = 0,
+        Position = UDim2_new(0.138, 0, 0, 13),
+        Size = UDim2_new(0, 640, 0, 470),
+        Parent = background,
+    })
     
     window.elements = {
         tab_holder = tabs_holder,
@@ -843,15 +883,16 @@ function UI:window(options)
         keybind.DisplayOrder = 10
         UI.keybind_screen_gui = keybind
         
-        local Background = Instance_new("Frame")
-        Background.Name = "Background"
-        Background.BorderColor3 = Color3_fromRGB(11, 11, 11)
-        Background.BorderSizePixel = 2
-        Background.Position = UDim2_new(0.01, 0, 0.488, 0)
-        Background.Size = UDim2_new(0, 164, 0, 24)
-        Background.Visible = false
-        Background.AutomaticSize = Enum.AutomaticSize.XY
-        Background.Parent = keybind
+        local Background = create_instance("Frame", {
+            Name = "Background",
+            BorderColor3 = Color3_fromRGB(11, 11, 11),
+            BorderSizePixel = 2,
+            Position = UDim2_new(0.01, 0, 0.488, 0),
+            Size = UDim2_new(0, 164, 0, 24),
+            Visible = false,
+            AutomaticSize = Enum.AutomaticSize.XY,
+            Parent = keybind,
+        })
         UI:AttachTheme(Background, { BackgroundColor3 = "background" })
         
         local stroke = Instance_new("UIStroke")
@@ -860,77 +901,83 @@ function UI:window(options)
         stroke.Thickness = 1
         stroke.Parent = Background
         
-        local TopLine = Instance_new("Frame")
-        TopLine.Name = "TopLine"
-        TopLine.BorderColor3 = Color3_fromRGB(25, 25, 25)
-        TopLine.Position = UDim2_new(0, 0, 0, 0)
-        TopLine.Size = UDim2_new(1, 0, 0, 1)
-        TopLine.Visible = true
-        TopLine.AutomaticSize = Enum.AutomaticSize.XY
-        TopLine.Parent = Background
+        local TopLine = create_instance("Frame", {
+            Name = "TopLine",
+            BorderColor3 = Color3_fromRGB(25, 25, 25),
+            Position = UDim2_new(0, 0, 0, 0),
+            Size = UDim2_new(1, 0, 0, 1),
+            Visible = true,
+            AutomaticSize = Enum.AutomaticSize.XY,
+            Parent = Background,
+        })
         UI:AttachTheme(TopLine, { BackgroundColor3 = "accent" })
         
-        local Name_Holder = Instance_new("Frame")
-        Name_Holder.Name = "Name_Holder"
-        Name_Holder.BackgroundTransparency = 1
-        Name_Holder.Position = UDim2_new(0, 0, 0, 0)
-        Name_Holder.Visible = true
-        Name_Holder.Size = UDim2_new(0, 170, 0.4, 0)
-        Name_Holder.AutomaticSize = Enum.AutomaticSize.XY
-        Name_Holder.Parent = Background
+        local Name_Holder = create_instance("Frame", {
+            Name = "Name_Holder",
+            BackgroundTransparency = 1,
+            Position = UDim2_new(0, 0, 0, 0),
+            Visible = true,
+            Size = UDim2_new(0, 170, 0.4, 0),
+            AutomaticSize = Enum.AutomaticSize.XY,
+            Parent = Background,
+        })
         
-        local Name = Instance_new("TextLabel")
-        Name.Name = "Name_List"
-        Name.Parent = Name_Holder
-        Name.BackgroundTransparency = 1
-        Name.BorderColor3 = Color3_fromRGB(25, 25, 25)
-        Name.BorderSizePixel = 0
-        Name.Size = UDim2_new(1, 0, 0, 25)
-        Name.FontFace = UI.font
-        Name.Text = "KeyBind List"
-        Name.TextStrokeTransparency = 0
-        Name.TextColor3 = Color3_fromRGB(255, 255, 255)
-        Name.TextSize = UI.font_size
-        Name.RichText = true
+        local Name = create_instance("TextLabel", {
+            Name = "Name_List",
+            Parent = Name_Holder,
+            BackgroundTransparency = 1,
+            BorderColor3 = Color3_fromRGB(25, 25, 25),
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 25),
+            FontFace = UI.font,
+            Text = "KeyBind List",
+            TextStrokeTransparency = 0,
+            TextColor3 = Color3_fromRGB(255, 255, 255),
+            TextSize = UI.font_size,
+            RichText = true,
+        })
         
-        local Tab = Instance_new("Frame")
-        Tab.Name = "Tab"
-        Tab.Visible = true
-        Tab.Parent = Background
-        Tab.BackgroundTransparency = 1.000
-        Tab.BorderColor3 = Color3_fromRGB(25, 25, 25)
-        Tab.Position = UDim2_new(0, 0, 0, 25)
-        Tab.Size = UDim2_new(1, 0, 0, -20)
-        Tab.AutomaticSize = Enum.AutomaticSize.Y
+        local Tab = create_instance("Frame", {
+            Name = "Tab",
+            Visible = true,
+            Parent = Background,
+            BackgroundTransparency = 1.000,
+            BorderColor3 = Color3_fromRGB(25, 25, 25),
+            Position = UDim2_new(0, 0, 0, 25),
+            Size = UDim2_new(1, 0, 0, -20),
+            AutomaticSize = Enum.AutomaticSize.Y,
+        })
         UI:AttachTheme(Tab, { BackgroundColor3 = "background" })
         
-        local UIListLayout = Instance_new("UIListLayout")
-        UIListLayout.Parent = Tab
-        UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        UIListLayout.Padding = UDim_new(0, 5)
+        local UIListLayout = create_instance("UIListLayout", {
+            Parent = Tab,
+            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = UDim_new(0, 5),
+        })
         
         function NKeyList:SetVisible(State)
             Background.Visible = State
         end
         
         function NKeyList:NewKey(Key, Name)
-            local KName = Instance_new("TextLabel")
-            local KeyValue = {}
-            KName.Name = "Name"
-            KName.Parent = Tab
-            KName.AnchorPoint = Vector2_new(0.5, 0.5)
-            KName.BackgroundColor3 = Color3_fromRGB(11, 11, 11)
-            KName.BackgroundTransparency = 1
-            KName.BorderColor3 = Color3_fromRGB(25, 25, 25)
-            KName.BorderSizePixel = 0
-            KName.Position = UDim2_new(0.5, 0, -1.85000002, 0)
-            KName.Size = UDim2_new(0, 0, 0, 0)
-            KName.FontFace = UI.font
-            KName.TextColor3 = Color3_fromRGB(255, 255, 255)
-            KName.TextSize = UI.font_size
-            KName.AutomaticSize = Enum.AutomaticSize.XY
+            local KName = create_instance("TextLabel", {
+                Name = "Name",
+                Parent = Tab,
+                AnchorPoint = Vector2_new(0.5, 0.5),
+                BackgroundColor3 = Color3_fromRGB(11, 11, 11),
+                BackgroundTransparency = 1,
+                BorderColor3 = Color3_fromRGB(25, 25, 25),
+                BorderSizePixel = 0,
+                Position = UDim2_new(0.5, 0, -1.85000002, 0),
+                Size = UDim2_new(0, 0, 0, 0),
+                FontFace = UI.font,
+                TextColor3 = Color3_fromRGB(255, 255, 255),
+                TextSize = UI.font_size,
+                AutomaticSize = Enum.AutomaticSize.XY,
+            }, Tab)
             
+            local KeyValue = {}
             function KeyValue:SetVisible(State)
                 KName.Visible = State
             end
@@ -964,56 +1011,61 @@ function UI:tabs(properties)
     }
     
     if not page.window.elements.tab_holder:FindFirstChild("UIListLayout") then
-        Instance_new("UIListLayout", {
+        create_instance("UIListLayout", {
             Name = "UIListLayout",
             Padding = UDim_new(0, 0),
             SortOrder = Enum.SortOrder.LayoutOrder,
             FillDirection = Enum.FillDirection.Vertical,
             VerticalAlignment = Enum.VerticalAlignment.Center,
-        }).Parent = page.window.elements.tab_holder
+        }, page.window.elements.tab_holder)
     end
     
-    local tab_button = Instance_new("TextButton")
-    tab_button.Name = page.name
-    tab_button.Text = ""
-    tab_button.BackgroundTransparency = 1
-    tab_button.Size = page.size
-    tab_button.AutoButtonColor = false
-    tab_button.Parent = page.window.elements.tab_holder
+    local tab_button = create_instance("TextButton", {
+        Name = page.name,
+        Text = "",
+        BackgroundTransparency = 1,
+        Size = page.size,
+        AutoButtonColor = false,
+        Parent = page.window.elements.tab_holder,
+    })
     
-    local tab_icon = Instance_new("ImageLabel")
-    tab_icon.Name = "icon"
-    tab_icon.BackgroundTransparency = 1
-    tab_icon.BorderSizePixel = 0
-    tab_icon.Size = UDim2_new(1, 0, 1, 0)
-    tab_icon.Image = page.icon
-    tab_icon.Parent = tab_button
+    local tab_icon = create_instance("ImageLabel", {
+        Name = "icon",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2_new(1, 0, 1, 0),
+        Image = page.icon,
+        Parent = tab_button,
+    })
     
-    local page_frame = Instance_new("ScrollingFrame")
-    page_frame.Name = page.name
-    page_frame.BackgroundTransparency = 1
-    page_frame.BorderSizePixel = 0
-    page_frame.Size = UDim2_new(1, 0, 1, 0)
-    page_frame.CanvasSize = UDim2_new(0, 0, 0, 0)
-    page_frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    page_frame.ScrollBarThickness = 2
-    page_frame.Visible = false
-    page_frame.Parent = page.window.elements.holder
+    local page_frame = create_instance("ScrollingFrame", {
+        Name = page.name,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2_new(1, 0, 1, 0),
+        CanvasSize = UDim2_new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 2,
+        Visible = false,
+        Parent = page.window.elements.holder,
+    })
     UI:AttachTheme(page_frame, { ScrollBarImageColor3 = "accent" })
     
-    local page_list = Instance_new("UIListLayout")
-    page_list.Name = "UIListLayout"
-    page_list.Padding = UDim_new(0, 8)
-    page_list.SortOrder = Enum.SortOrder.LayoutOrder
-    page_list.FillDirection = Enum.FillDirection.Vertical
-    page_list.Parent = page_frame
+    local page_list = create_instance("UIListLayout", {
+        Name = "UIListLayout",
+        Padding = UDim_new(0, 8),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        FillDirection = Enum.FillDirection.Vertical,
+        Parent = page_frame,
+    })
     
-    local page_padding = Instance_new("UIPadding")
-    page_padding.PaddingLeft = UDim_new(0, 10)
-    page_padding.PaddingRight = UDim_new(0, 10)
-    page_padding.PaddingTop = UDim_new(0, 10)
-    page_padding.PaddingBottom = UDim_new(0, 10)
-    page_padding.Parent = page_frame
+    local page_padding = create_instance("UIPadding", {
+        PaddingLeft = UDim_new(0, 10),
+        PaddingRight = UDim_new(0, 10),
+        PaddingTop = UDim_new(0, 10),
+        PaddingBottom = UDim_new(0, 10),
+        Parent = page_frame,
+    })
     
     function page:Turn(state)
         page.open = state
@@ -1046,38 +1098,42 @@ function UI.sections:section(options)
         elements = {},
     }
     
-    local section_frame = Instance_new("Frame")
-    section_frame.Name = section.name
-    section_frame.BackgroundTransparency = 1
-    section_frame.BorderSizePixel = 0
-    section_frame.Size = UDim2_new(1, 0, 0, 20)
-    section_frame.AutomaticSize = Enum.AutomaticSize.Y
-    section_frame.Parent = self.page.elements.holder
+    local section_frame = create_instance("Frame", {
+        Name = section.name,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2_new(1, 0, 0, 20),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Parent = self.page.elements.holder,
+    })
     
-    local section_list = Instance_new("UIListLayout")
-    section_list.Padding = UDim_new(0, 6)
-    section_list.SortOrder = Enum.SortOrder.LayoutOrder
-    section_list.FillDirection = Enum.FillDirection.Vertical
-    section_list.Parent = section_frame
+    local section_list = create_instance("UIListLayout", {
+        Padding = UDim_new(0, 6),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        FillDirection = Enum.FillDirection.Vertical,
+        Parent = section_frame,
+    })
     
-    local section_padding = Instance_new("UIPadding")
-    section_padding.PaddingLeft = UDim_new(0, 10)
-    section_padding.PaddingRight = UDim_new(0, 10)
-    section_padding.PaddingTop = UDim_new(0, 8)
-    section_padding.PaddingBottom = UDim_new(0, 8)
-    section_padding.Parent = section_frame
+    local section_padding = create_instance("UIPadding", {
+        PaddingLeft = UDim_new(0, 10),
+        PaddingRight = UDim_new(0, 10),
+        PaddingTop = UDim_new(0, 8),
+        PaddingBottom = UDim_new(0, 8),
+        Parent = section_frame,
+    })
     
-    local section_title = Instance_new("TextLabel")
-    section_title.Name = "Title"
-    section_title.BackgroundTransparency = 1
-    section_title.Text = section.name
-    section_title.TextColor3 = Color3_fromRGB(255, 255, 255)
-    section_title.TextXAlignment = Enum.TextXAlignment.Left
-    section_title.Size = UDim2_new(1, 0, 0, 20)
-    section_title.FontFace = UI.font
-    section_title.TextSize = UI.font_size
-    section_title.TextStrokeTransparency = 0
-    section_title.Parent = section_frame
+    local section_title = create_instance("TextLabel", {
+        Name = "Title",
+        BackgroundTransparency = 1,
+        Text = section.name,
+        TextColor3 = Color3_fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Size = UDim2_new(1, 0, 0, 20),
+        FontFace = UI.font,
+        TextSize = UI.font_size,
+        TextStrokeTransparency = 0,
+        Parent = section_frame,
+    })
     
     function section:toggle(toggle_options)
         local toggle = {
@@ -1089,68 +1145,74 @@ function UI.sections:section(options)
             callback = toggle_options.Callback or toggle_options.callback or function() end,
         }
         
-        local toggle_frame = Instance_new("Frame")
-        toggle_frame.Name = toggle.name
-        toggle_frame.BackgroundTransparency = 1
-        toggle_frame.BorderSizePixel = 0
-        toggle_frame.Size = UDim2_new(1, 0, 0, 24)
-        toggle_frame.Parent = section_frame
+        local toggle_frame = create_instance("Frame", {
+            Name = toggle.name,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 24),
+            Parent = section_frame,
+        })
         
-        local toggle_list = Instance_new("UIListLayout")
-        toggle_list.Padding = UDim_new(0, 4)
-        toggle_list.FillDirection = Enum.FillDirection.Horizontal
-        toggle_list.VerticalAlignment = Enum.VerticalAlignment.Center
-        toggle_list.Parent = toggle_frame
+        local toggle_list = create_instance("UIListLayout", {
+            Padding = UDim_new(0, 4),
+            FillDirection = Enum.FillDirection.Horizontal,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = toggle_frame,
+        })
         
-        local toggle_button = Instance_new("TextButton")
-        toggle_button.Name = "Toggle"
-        toggle_button.BackgroundColor3 = Color3_fromRGB(45, 45, 45)
-        toggle_button.BorderSizePixel = 0
-        toggle_button.Size = UDim2_new(0, 16, 0, 16)
-        toggle_button.Text = ""
-        toggle_button.AutoButtonColor = false
-        toggle_button.Parent = toggle_frame
+        local toggle_button = create_instance("TextButton", {
+            Name = "Toggle",
+            BackgroundColor3 = Color3_fromRGB(45, 45, 45),
+            BorderSizePixel = 0,
+            Size = UDim2_new(0, 16, 0, 16),
+            Text = "",
+            AutoButtonColor = false,
+            Parent = toggle_frame,
+        })
         UI:AttachTheme(toggle_button, { BackgroundColor3 = "background" })
-        Instance_new("UICorner", { Parent = toggle_button, CornerRadius = UDim_new(0, 4) })
+        create_instance("UICorner", { Parent = toggle_button, CornerRadius = UDim_new(0, 4) })
         
-        local toggle_outline = Instance_new("Frame")
-        toggle_outline.Name = "Outline"
-        toggle_outline.BackgroundColor3 = Color3_fromRGB(255, 255, 255)
-        toggle_outline.BackgroundTransparency = 1
-        toggle_outline.BorderColor3 = Color3_fromRGB(0, 0, 0)
-        toggle_outline.BorderSizePixel = 0
-        toggle_outline.Position = UDim2_new(0, -1, 0, -1)
-        toggle_outline.Size = UDim2_new(1, 2, 1, 2)
-        toggle_outline.ZIndex = 2
-        toggle_outline.Parent = toggle_button
+        local toggle_outline = create_instance("Frame", {
+            Name = "Outline",
+            BackgroundColor3 = Color3_fromRGB(255, 255, 255),
+            BackgroundTransparency = 1,
+            BorderColor3 = Color3_fromRGB(0, 0, 0),
+            BorderSizePixel = 0,
+            Position = UDim2_new(0, -1, 0, -1),
+            Size = UDim2_new(1, 2, 1, 2),
+            ZIndex = 2,
+            Parent = toggle_button,
+        })
         UI:AttachTheme(toggle_outline, { BackgroundColor3 = "outline" })
         
-        local toggle_label = Instance_new("TextLabel")
-        toggle_label.Name = "Label"
-        toggle_label.BackgroundTransparency = 1
-        toggle_label.Text = toggle.name
-        toggle_label.TextColor3 = Color3_fromRGB(255, 255, 255)
-        toggle_label.TextXAlignment = Enum.TextXAlignment.Left
-        toggle_label.Size = UDim2_new(1, -24, 0, 16)
-        toggle_label.Position = UDim2_new(0, 24, 0, 0)
-        toggle_label.FontFace = UI.font
-        toggle_label.TextSize = UI.font_size
-        toggle_label.TextStrokeTransparency = 0
-        toggle_label.Parent = toggle_frame
+        local toggle_label = create_instance("TextLabel", {
+            Name = "Label",
+            BackgroundTransparency = 1,
+            Text = toggle.name,
+            TextColor3 = Color3_fromRGB(255, 255, 255),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2_new(1, -24, 0, 16),
+            Position = UDim2_new(0, 24, 0, 0),
+            FontFace = UI.font,
+            TextSize = UI.font_size,
+            TextStrokeTransparency = 0,
+            Parent = toggle_frame,
+        })
         
         if toggle_options.Description then
-            local toggle_desc = Instance_new("TextLabel")
-            toggle_desc.Name = "Description"
-            toggle_desc.BackgroundTransparency = 1
-            toggle_desc.Text = toggle_options.Description
-            toggle_desc.TextColor3 = Color3_fromRGB(128, 128, 128)
-            toggle_desc.TextXAlignment = Enum.TextXAlignment.Left
-            toggle_desc.Size = UDim2_new(1, -24, 0, 12)
-            toggle_desc.Position = UDim2_new(0, 24, 0, 18)
-            toggle_desc.FontFace = UI.font
-            toggle_desc.TextSize = 10
-            toggle_desc.TextStrokeTransparency = 0
-            toggle_desc.Parent = toggle_frame
+            local toggle_desc = create_instance("TextLabel", {
+                Name = "Description",
+                BackgroundTransparency = 1,
+                Text = toggle_options.Description,
+                TextColor3 = Color3_fromRGB(128, 128, 128),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2_new(1, -24, 0, 12),
+                Position = UDim2_new(0, 24, 0, 18),
+                FontFace = UI.font,
+                TextSize = 10,
+                TextStrokeTransparency = 0,
+                Parent = toggle_frame,
+            })
         end
         
         local state = toggle.default
@@ -1178,7 +1240,7 @@ function UI.sections:section(options)
         function toggle_api:Get() return state end
         function toggle_api:SetCallback(cb) toggle.callback = cb end
         
-        table.insert(section.elements, toggle_api)
+        table_insert(section.elements, toggle_api)
         return toggle_api
     end
     
@@ -1193,55 +1255,60 @@ function UI.sections:section(options)
             callback = dropdown_options.Callback or dropdown_options.callback or function() end,
         }
         
-        local dropdown_frame = Instance_new("Frame")
-        dropdown_frame.Name = dropdown.name
-        dropdown_frame.BackgroundTransparency = 1
-        dropdown_frame.BorderSizePixel = 0
-        dropdown_frame.Size = UDim2_new(1, 0, 0, 40)
-        dropdown_frame.Parent = section_frame
+        local dropdown_frame = create_instance("Frame", {
+            Name = dropdown.name,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 40),
+            Parent = section_frame,
+        })
         
-        local dropdown_list = Instance_new("UIListLayout")
-        dropdown_list.Padding = UDim_new(0, 4)
-        dropdown_list.FillDirection = Enum.FillDirection.Vertical
-        dropdown_list.VerticalAlignment = Enum.VerticalAlignment.Center
-        dropdown_list.Parent = dropdown_frame
+        local dropdown_list = create_instance("UIListLayout", {
+            Padding = UDim_new(0, 4),
+            FillDirection = Enum.FillDirection.Vertical,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = dropdown_frame,
+        })
         
-        local dropdown_label = Instance_new("TextLabel")
-        dropdown_label.Name = "Label"
-        dropdown_label.BackgroundTransparency = 1
-        dropdown_label.Text = dropdown.name
-        dropdown_label.TextColor3 = Color3_fromRGB(255, 255, 255)
-        dropdown_label.TextXAlignment = Enum.TextXAlignment.Left
-        dropdown_label.Size = UDim2_new(1, 0, 0, 16)
-        dropdown_label.FontFace = UI.font
-        dropdown_label.TextSize = UI.font_size
-        dropdown_label.TextStrokeTransparency = 0
-        dropdown_label.Parent = dropdown_frame
+        local dropdown_label = create_instance("TextLabel", {
+            Name = "Label",
+            BackgroundTransparency = 1,
+            Text = dropdown.name,
+            TextColor3 = Color3_fromRGB(255, 255, 255),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2_new(1, 0, 0, 16),
+            FontFace = UI.font,
+            TextSize = UI.font_size,
+            TextStrokeTransparency = 0,
+            Parent = dropdown_frame,
+        })
         
-        local dropdown_button = Instance_new("TextButton")
-        dropdown_button.Name = "Dropdown"
-        dropdown_button.BackgroundColor3 = Color3_fromRGB(45, 45, 45)
-        dropdown_button.BorderSizePixel = 0
-        dropdown_button.Size = UDim2_new(1, 0, 0, 20)
-        dropdown_button.Text = dropdown.default
-        dropdown_button.AutoButtonColor = false
-        dropdown_button.Parent = dropdown_frame
+        local dropdown_button = create_instance("TextButton", {
+            Name = "Dropdown",
+            BackgroundColor3 = Color3_fromRGB(45, 45, 45),
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 20),
+            Text = dropdown.default,
+            AutoButtonColor = false,
+            Parent = dropdown_frame,
+        })
         UI:AttachTheme(dropdown_button, { BackgroundColor3 = "background" })
-        Instance_new("UICorner", { Parent = dropdown_button, CornerRadius = UDim_new(0, 4) })
+        create_instance("UICorner", { Parent = dropdown_button, CornerRadius = UDim_new(0, 4) })
         
         if dropdown_options.Description then
-            local dropdown_desc = Instance_new("TextLabel")
-            dropdown_desc.Name = "Description"
-            dropdown_desc.BackgroundTransparency = 1
-            dropdown_desc.Text = dropdown_options.Description
-            dropdown_desc.TextColor3 = Color3_fromRGB(128, 128, 128)
-            dropdown_desc.TextXAlignment = Enum.TextXAlignment.Left
-            dropdown_desc.Size = UDim2_new(1, 0, 0, 12)
-            dropdown_desc.Position = UDim2_new(0, 0, 0, 22)
-            dropdown_desc.FontFace = UI.font
-            dropdown_desc.TextSize = 10
-            dropdown_desc.TextStrokeTransparency = 0
-            dropdown_desc.Parent = dropdown_frame
+            local dropdown_desc = create_instance("TextLabel", {
+                Name = "Description",
+                BackgroundTransparency = 1,
+                Text = dropdown_options.Description,
+                TextColor3 = Color3_fromRGB(128, 128, 128),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2_new(1, 0, 0, 12),
+                Position = UDim2_new(0, 0, 0, 22),
+                FontFace = UI.font,
+                TextSize = 10,
+                TextStrokeTransparency = 0,
+                Parent = dropdown_frame,
+            })
         end
         
         UI.flags[dropdown.flag] = dropdown.default
@@ -1256,7 +1323,7 @@ function UI.sections:section(options)
         function dropdown_api:Get() return dropdown.default end
         function dropdown_api:SetCallback(cb) dropdown.callback = cb end
         
-        table.insert(section.elements, dropdown_api)
+        table_insert(section.elements, dropdown_api)
         return dropdown_api
     end
     
@@ -1273,55 +1340,60 @@ function UI.sections:section(options)
             callback = slider_options.Callback or slider_options.callback or function() end,
         }
         
-        local slider_frame = Instance_new("Frame")
-        slider_frame.Name = slider.name
-        slider_frame.BackgroundTransparency = 1
-        slider_frame.BorderSizePixel = 0
-        slider_frame.Size = UDim2_new(1, 0, 0, 40)
-        slider_frame.Parent = section_frame
+        local slider_frame = create_instance("Frame", {
+            Name = slider.name,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 40),
+            Parent = section_frame,
+        })
         
-        local slider_list = Instance_new("UIListLayout")
-        slider_list.Padding = UDim_new(0, 4)
-        slider_list.FillDirection = Enum.FillDirection.Vertical
-        slider_list.VerticalAlignment = Enum.VerticalAlignment.Center
-        slider_list.Parent = slider_frame
+        local slider_list = create_instance("UIListLayout", {
+            Padding = UDim_new(0, 4),
+            FillDirection = Enum.FillDirection.Vertical,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = slider_frame,
+        })
         
-        local slider_label = Instance_new("TextLabel")
-        slider_label.Name = "Label"
-        slider_label.BackgroundTransparency = 1
-        slider_label.Text = slider.name
-        slider_label.TextColor3 = Color3_fromRGB(255, 255, 255)
-        slider_label.TextXAlignment = Enum.TextXAlignment.Left
-        slider_label.Size = UDim2_new(1, 0, 0, 16)
-        slider_label.FontFace = UI.font
-        slider_label.TextSize = UI.font_size
-        slider_label.TextStrokeTransparency = 0
-        slider_label.Parent = slider_frame
+        local slider_label = create_instance("TextLabel", {
+            Name = "Label",
+            BackgroundTransparency = 1,
+            Text = slider.name,
+            TextColor3 = Color3_fromRGB(255, 255, 255),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2_new(1, 0, 0, 16),
+            FontFace = UI.font,
+            TextSize = UI.font_size,
+            TextStrokeTransparency = 0,
+            Parent = slider_frame,
+        })
         
-        local slider_button = Instance_new("TextButton")
-        slider_button.Name = "Slider"
-        slider_button.BackgroundColor3 = Color3_fromRGB(45, 45, 45)
-        slider_button.BorderSizePixel = 0
-        slider_button.Size = UDim2_new(1, 0, 0, 16)
-        slider_button.Text = tostring(slider.default) .. slider.suffix
-        slider_button.AutoButtonColor = false
-        slider_button.Parent = slider_frame
+        local slider_button = create_instance("TextButton", {
+            Name = "Slider",
+            BackgroundColor3 = Color3_fromRGB(45, 45, 45),
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 16),
+            Text = tostring(slider.default) .. slider.suffix,
+            AutoButtonColor = false,
+            Parent = slider_frame,
+        })
         UI:AttachTheme(slider_button, { BackgroundColor3 = "background" })
-        Instance_new("UICorner", { Parent = slider_button, CornerRadius = UDim_new(0, 4) })
+        create_instance("UICorner", { Parent = slider_button, CornerRadius = UDim_new(0, 4) })
         
         if slider_options.Description then
-            local slider_desc = Instance_new("TextLabel")
-            slider_desc.Name = "Description"
-            slider_desc.BackgroundTransparency = 1
-            slider_desc.Text = slider_options.Description
-            slider_desc.TextColor3 = Color3_fromRGB(128, 128, 128)
-            slider_desc.TextXAlignment = Enum.TextXAlignment.Left
-            slider_desc.Size = UDim2_new(1, 0, 0, 12)
-            slider_desc.Position = UDim2_new(0, 0, 0, 22)
-            slider_desc.FontFace = UI.font
-            slider_desc.TextSize = 10
-            slider_desc.TextStrokeTransparency = 0
-            slider_desc.Parent = slider_frame
+            local slider_desc = create_instance("TextLabel", {
+                Name = "Description",
+                BackgroundTransparency = 1,
+                Text = slider_options.Description,
+                TextColor3 = Color3_fromRGB(128, 128, 128),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2_new(1, 0, 0, 12),
+                Position = UDim2_new(0, 0, 0, 22),
+                FontFace = UI.font,
+                TextSize = 10,
+                TextStrokeTransparency = 0,
+                Parent = slider_frame,
+            })
         end
         
         UI.flags[slider.flag] = slider.default
@@ -1336,7 +1408,7 @@ function UI.sections:section(options)
         function slider_api:Get() return slider.default end
         function slider_api:SetCallback(cb) slider.callback = cb end
         
-        table.insert(section.elements, slider_api)
+        table_insert(section.elements, slider_api)
         return slider_api
     end
     
@@ -1349,43 +1421,47 @@ function UI.sections:section(options)
             callback = color_options.Callback or color_options.callback or function() end,
         }
         
-        local colorpicker_frame = Instance_new("Frame")
-        colorpicker_frame.Name = colorpicker.name
-        colorpicker_frame.BackgroundTransparency = 1
-        colorpicker_frame.BorderSizePixel = 0
-        colorpicker_frame.Size = UDim2_new(1, 0, 0, 20)
-        colorpicker_frame.Parent = section_frame
+        local colorpicker_frame = create_instance("Frame", {
+            Name = colorpicker.name,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 20),
+            Parent = section_frame,
+        })
         
-        local colorpicker_list = Instance_new("UIListLayout")
-        colorpicker_list.Padding = UDim_new(0, 4)
-        colorpicker_list.FillDirection = Enum.FillDirection.Horizontal
-        colorpicker_list.VerticalAlignment = Enum.VerticalAlignment.Center
-        colorpicker_list.Parent = colorpicker_frame
+        local colorpicker_list = create_instance("UIListLayout", {
+            Padding = UDim_new(0, 4),
+            FillDirection = Enum.FillDirection.Horizontal,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = colorpicker_frame,
+        })
         
-        local colorpicker_label = Instance_new("TextLabel")
-        colorpicker_label.Name = "Label"
-        colorpicker_label.BackgroundTransparency = 1
-        colorpicker_label.Text = colorpicker.name
-        colorpicker_label.TextColor3 = Color3_fromRGB(255, 255, 255)
-        colorpicker_label.TextXAlignment = Enum.TextXAlignment.Left
-        colorpicker_label.Size = UDim2_new(1, -20, 0, 16)
-        colorpicker_label.FontFace = UI.font
-        colorpicker_label.TextSize = UI.font_size
-        colorpicker_label.TextStrokeTransparency = 0
-        colorpicker_label.Parent = colorpicker_frame
+        local colorpicker_label = create_instance("TextLabel", {
+            Name = "Label",
+            BackgroundTransparency = 1,
+            Text = colorpicker.name,
+            TextColor3 = Color3_fromRGB(255, 255, 255),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2_new(1, -20, 0, 16),
+            FontFace = UI.font,
+            TextSize = UI.font_size,
+            TextStrokeTransparency = 0,
+            Parent = colorpicker_frame,
+        })
         
-        local color_icon = Instance_new("TextButton")
-        color_icon.Name = "Color"
-        color_icon.BackgroundColor3 = colorpicker.default
-        color_icon.BorderColor3 = Color3_fromRGB(36, 36, 36)
-        color_icon.BorderSizePixel = 1
-        color_icon.Position = UDim2_new(1, -18, 0.5, 0)
-        color_icon.Size = UDim2_new(0, 16, 0, 16)
-        color_icon.Text = ""
-        color_icon.ZIndex = 99
-        color_icon.AutoButtonColor = false
-        color_icon.Parent = colorpicker_frame
-        Instance_new("UICorner", { Parent = color_icon, CornerRadius = UDim_new(1, 0) })
+        local color_icon = create_instance("TextButton", {
+            Name = "Color",
+            BackgroundColor3 = colorpicker.default,
+            BorderColor3 = Color3_fromRGB(36, 36, 36),
+            BorderSizePixel = 1,
+            Position = UDim2_new(1, -18, 0.5, 0),
+            Size = UDim2_new(0, 16, 0, 16),
+            Text = "",
+            ZIndex = 99,
+            AutoButtonColor = false,
+            Parent = colorpicker_frame,
+        })
+        create_instance("UICorner", { Parent = color_icon, CornerRadius = UDim_new(1, 0) })
         
         UI.flags[colorpicker.flag] = UI:RGBA(colorpicker.default.R * 255, colorpicker.default.G * 255, colorpicker.default.B * 255, 1)
         
@@ -1399,7 +1475,7 @@ function UI.sections:section(options)
         function colorpicker_api:Get() return colorpicker.default end
         function colorpicker_api:SetCallback(cb) colorpicker.callback = cb end
         
-        table.insert(section.elements, colorpicker_api)
+        table_insert(section.elements, colorpicker_api)
         return colorpicker_api
     end
     
@@ -1410,59 +1486,64 @@ function UI.sections:section(options)
             callback = button_options.Callback or button_options.callback or function() end,
         }
         
-        local button_frame = Instance_new("Frame")
-        button_frame.Name = button.name
-        button_frame.BackgroundTransparency = 1
-        button_frame.BorderSizePixel = 0
-        button_frame.Size = UDim2_new(1, 0, 0, 24)
-        button_frame.Parent = section_frame
+        local button_frame = create_instance("Frame", {
+            Name = button.name,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 24),
+            Parent = section_frame,
+        })
         
-        local button_list = Instance_new("UIListLayout")
-        button_list.Padding = UDim_new(0, 4)
-        button_list.FillDirection = Enum.FillDirection.Horizontal
-        button_list.VerticalAlignment = Enum.VerticalAlignment.Center
-        button_list.Parent = button_frame
+        local button_list = create_instance("UIListLayout", {
+            Padding = UDim_new(0, 4),
+            FillDirection = Enum.FillDirection.Horizontal,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = button_frame,
+        })
         
-        local button_label = Instance_new("TextLabel")
-        button_label.Name = "Label"
-        button_label.BackgroundTransparency = 1
-        button_label.Text = button.name
-        button_label.TextColor3 = Color3_fromRGB(255, 255, 255)
-        button_label.TextXAlignment = Enum.TextXAlignment.Left
-        button_label.Size = UDim2_new(1, -70, 0, 16)
-        button_label.FontFace = UI.font
-        button_label.TextSize = UI.font_size
-        button_label.TextStrokeTransparency = 0
-        button_label.Parent = button_frame
+        local button_label = create_instance("TextLabel", {
+            Name = "Label",
+            BackgroundTransparency = 1,
+            Text = button.name,
+            TextColor3 = Color3_fromRGB(255, 255, 255),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2_new(1, -70, 0, 16),
+            FontFace = UI.font,
+            TextSize = UI.font_size,
+            TextStrokeTransparency = 0,
+            Parent = button_frame,
+        })
         
-        local button_click = Instance_new("TextButton")
-        button_click.Name = "Button"
-        button_click.BackgroundColor3 = Color3_fromRGB(45, 45, 45)
-        button_click.BorderSizePixel = 0
-        button_click.Size = UDim2_new(0, 60, 0, 18)
-        button_click.Text = button.name
-        button_click.AutoButtonColor = false
-        button_click.Parent = button_frame
+        local button_click = create_instance("TextButton", {
+            Name = "Button",
+            BackgroundColor3 = Color3_fromRGB(45, 45, 45),
+            BorderSizePixel = 0,
+            Size = UDim2_new(0, 60, 0, 18),
+            Text = button.name,
+            AutoButtonColor = false,
+            Parent = button_frame,
+        })
         UI:AttachTheme(button_click, { BackgroundColor3 = "background" })
-        Instance_new("UICorner", { Parent = button_click, CornerRadius = UDim_new(0, 4) })
+        create_instance("UICorner", { Parent = button_click, CornerRadius = UDim_new(0, 4) })
         
         button_click.MouseButton1Click:Connect(function()
             if button.callback then button.callback() end
         end)
         
         if button_options.Description then
-            local button_desc = Instance_new("TextLabel")
-            button_desc.Name = "Description"
-            button_desc.BackgroundTransparency = 1
-            button_desc.Text = button_options.Description
-            button_desc.TextColor3 = Color3_fromRGB(128, 128, 128)
-            button_desc.TextXAlignment = Enum.TextXAlignment.Left
-            button_desc.Size = UDim2_new(1, -70, 0, 12)
-            button_desc.Position = UDim2_new(0, 0, 0, 18)
-            button_desc.FontFace = UI.font
-            button_desc.TextSize = 10
-            button_desc.TextStrokeTransparency = 0
-            button_desc.Parent = button_frame
+            local button_desc = create_instance("TextLabel", {
+                Name = "Description",
+                BackgroundTransparency = 1,
+                Text = button_options.Description,
+                TextColor3 = Color3_fromRGB(128, 128, 128),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2_new(1, -70, 0, 12),
+                Position = UDim2_new(0, 0, 0, 18),
+                FontFace = UI.font,
+                TextSize = 10,
+                TextStrokeTransparency = 0,
+                Parent = button_frame,
+            })
         end
     end
     
@@ -1477,55 +1558,60 @@ function UI.sections:section(options)
             callback = keybind_options.Callback or keybind_options.callback or function() end,
         }
         
-        local keybind_frame = Instance_new("Frame")
-        keybind_frame.Name = keybind.name
-        keybind_frame.BackgroundTransparency = 1
-        keybind_frame.BorderSizePixel = 0
-        keybind_frame.Size = UDim2_new(1, 0, 0, 24)
-        keybind_frame.Parent = section_frame
+        local keybind_frame = create_instance("Frame", {
+            Name = keybind.name,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2_new(1, 0, 0, 24),
+            Parent = section_frame,
+        })
         
-        local keybind_list = Instance_new("UIListLayout")
-        keybind_list.Padding = UDim_new(0, 4)
-        keybind_list.FillDirection = Enum.FillDirection.Horizontal
-        keybind_list.VerticalAlignment = Enum.VerticalAlignment.Center
-        keybind_list.Parent = keybind_frame
+        local keybind_list = create_instance("UIListLayout", {
+            Padding = UDim_new(0, 4),
+            FillDirection = Enum.FillDirection.Horizontal,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Parent = keybind_frame,
+        })
         
-        local keybind_label = Instance_new("TextLabel")
-        keybind_label.Name = "Label"
-        keybind_label.BackgroundTransparency = 1
-        keybind_label.Text = keybind.name
-        keybind_label.TextColor3 = Color3_fromRGB(255, 255, 255)
-        keybind_label.TextXAlignment = Enum.TextXAlignment.Left
-        keybind_label.Size = UDim2_new(1, -70, 0, 16)
-        keybind_label.FontFace = UI.font
-        keybind_label.TextSize = UI.font_size
-        keybind_label.TextStrokeTransparency = 0
-        keybind_label.Parent = keybind_frame
+        local keybind_label = create_instance("TextLabel", {
+            Name = "Label",
+            BackgroundTransparency = 1,
+            Text = keybind.name,
+            TextColor3 = Color3_fromRGB(255, 255, 255),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2_new(1, -70, 0, 16),
+            FontFace = UI.font,
+            TextSize = UI.font_size,
+            TextStrokeTransparency = 0,
+            Parent = keybind_frame,
+        })
         
-        local keybind_button = Instance_new("TextButton")
-        keybind_button.Name = "Keybind"
-        keybind_button.BackgroundColor3 = Color3_fromRGB(45, 45, 45)
-        keybind_button.BorderSizePixel = 0
-        keybind_button.Size = UDim2_new(0, 60, 0, 18)
-        keybind_button.Text = keybind.default.Name or "Unknown"
-        keybind_button.AutoButtonColor = false
-        keybind_button.Parent = keybind_frame
+        local keybind_button = create_instance("TextButton", {
+            Name = "Keybind",
+            BackgroundColor3 = Color3_fromRGB(45, 45, 45),
+            BorderSizePixel = 0,
+            Size = UDim2_new(0, 60, 0, 18),
+            Text = keybind.default.Name or "Unknown",
+            AutoButtonColor = false,
+            Parent = keybind_frame,
+        })
         UI:AttachTheme(keybind_button, { BackgroundColor3 = "background" })
-        Instance_new("UICorner", { Parent = keybind_button, CornerRadius = UDim_new(0, 4) })
+        create_instance("UICorner", { Parent = keybind_button, CornerRadius = UDim_new(0, 4) })
         
         if keybind_options.Description then
-            local keybind_desc = Instance_new("TextLabel")
-            keybind_desc.Name = "Description"
-            keybind_desc.BackgroundTransparency = 1
-            keybind_desc.Text = keybind_options.Description
-            keybind_desc.TextColor3 = Color3_fromRGB(128, 128, 128)
-            keybind_desc.TextXAlignment = Enum.TextXAlignment.Left
-            keybind_desc.Size = UDim2_new(1, -70, 0, 12)
-            keybind_desc.Position = UDim2_new(0, 0, 0, 18)
-            keybind_desc.FontFace = UI.font
-            keybind_desc.TextSize = 10
-            keybind_desc.TextStrokeTransparency = 0
-            keybind_desc.Parent = keybind_frame
+            local keybind_desc = create_instance("TextLabel", {
+                Name = "Description",
+                BackgroundTransparency = 1,
+                Text = keybind_options.Description,
+                TextColor3 = Color3_fromRGB(128, 128, 128),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = UDim2_new(1, -70, 0, 12),
+                Position = UDim2_new(0, 0, 0, 18),
+                FontFace = UI.font,
+                TextSize = 10,
+                TextStrokeTransparency = 0,
+                Parent = keybind_frame,
+            })
         end
         
         local listening = false
@@ -1550,7 +1636,7 @@ function UI.sections:section(options)
         end)
     end
     
-    table.insert(page.sections, section)
+    table_insert(page.sections, section)
     return section
 end
 
