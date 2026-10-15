@@ -25,6 +25,8 @@ local UDim_new = UDim.new
 local Vector2_new = Vector2.new
 local Color3_fromRGB = Color3.fromRGB
 local Color3_new = Color3.new
+local Color3_fromHSV = Color3.fromHSV
+local Color3_fromHex = Color3.fromHex
 local Instance_new = Instance.new
 local math_floor = math.floor
 local math_clamp = math.clamp
@@ -100,6 +102,7 @@ local UI = {
     currentTheme = "Default",
     themes = Themes,
     flags = {},
+    flag_setters = {},
     pages = {},
     sections = {},
     instancemap = {},
@@ -125,7 +128,10 @@ end
 
 function UI:AttachTheme(obj, props)
     local activeTheme = self.currentTheme or "Default"
-    self.instancemap[obj] = { Instance = obj, Properties = props }
+    self.instancemap[obj] = self.instancemap[obj] or { Instance = obj, Properties = {} }
+    for key, value in pairs(props) do
+        self.instancemap[obj].Properties[key] = value
+    end
 
     for property, themeKey in pairs(props) do
         if self.themes[activeTheme] and self.themes[activeTheme][themeKey] then
@@ -245,12 +251,8 @@ function UI:LoadConfig(Config)
         end
     end
     for i, v in pairs(Table2) do
-        if flags[i] then
-            if typeof(flags[i]) == "table" then
-                flags[i]:Set(v)
-            else
-                flags[i](v)
-            end
+        if UI.flag_setters[i] then
+            UI.flag_setters[i](v)
         end
     end
 end
@@ -699,16 +701,17 @@ function UI:NewPicker(name, default, defaultalpha, parent, count, flag, callback
         if callback then callback(UI:RGBA(hsv.r * 255, hsv.g * 255, hsv.b * 255, alpha)) end
     end
     
-    flags[flag] = set
+    UI.picker_setters = UI.picker_setters or {}
+    UI.picker_setters[flag] = set
     set(default, defaultalpha)
     
-    Sat.InputBegan:Connect(function(input)
+    Color.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             slidingsaturation = true
             update()
         end
     end)
-    Sat.InputEnded:Connect(function(input)
+    Color.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             slidingsaturation = false
             update()
@@ -786,7 +789,7 @@ function UI:window(options)
     local menu = Instance_new("ScreenGui")
     menu.Name = "visual menu"
     menu.Parent = CoreGui
-    menu.IgnoreGuiInset = Enum.ScreenInsets.DeviceSafeInsets
+    menu.IgnoreGuiInset = true
     menu.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     menu.DisplayOrder = 10
     UI.menu_gui = menu
@@ -879,7 +882,7 @@ function UI:window(options)
         local keybind = Instance_new("ScreenGui")
         keybind.Name = "KeyBind List"
         keybind.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        keybind.IgnoreGuiInset = Enum.ScreenInsets.DeviceSafeInsets
+        keybind.IgnoreGuiInset = true
         keybind.DisplayOrder = 10
         UI.keybind_screen_gui = keybind
         
@@ -1050,6 +1053,7 @@ function UI:tabs(properties)
         Parent = page.window.elements.holder,
     })
     UI:AttachTheme(page_frame, { ScrollBarImageColor3 = "accent" })
+    page.frame = page_frame
     
     local page_list = create_instance("UIListLayout", {
         Name = "UIListLayout",
@@ -1081,7 +1085,10 @@ function UI:tabs(properties)
     end)
     
     table.insert(page.window.pages, page)
-    page_amount = page_amount + 1
+    UI.page_amount = (UI.page_amount or 0) + 1
+    if #page.window.pages == 1 then
+        page:Turn(true)
+    end
     return setmetatable(page, { __index = UI.sections or {} })
 end
 
@@ -1104,7 +1111,7 @@ function UI.sections:section(options)
         BorderSizePixel = 0,
         Size = UDim2_new(1, 0, 0, 20),
         AutomaticSize = Enum.AutomaticSize.Y,
-        Parent = self.page.elements.holder,
+        Parent = self.frame or self.window.elements.holder,
     })
     
     local section_list = create_instance("UIListLayout", {
@@ -1149,15 +1156,8 @@ function UI.sections:section(options)
             Name = toggle.name,
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
-            Size = UDim2_new(1, 0, 0, 24),
+            Size = UDim2_new(1, 0, 0, toggle_options.Description and 34 or 22),
             Parent = section_frame,
-        })
-        
-        local toggle_list = create_instance("UIListLayout", {
-            Padding = UDim_new(0, 4),
-            FillDirection = Enum.FillDirection.Horizontal,
-            VerticalAlignment = Enum.VerticalAlignment.Center,
-            Parent = toggle_frame,
         })
         
         local toggle_button = create_instance("TextButton", {
@@ -1216,6 +1216,7 @@ function UI.sections:section(options)
         end
         
         local state = toggle.default
+        UI.flags[toggle.flag] = state
         toggle_button.BackgroundColor3 = state and UI.themes[UI.currentTheme or "Default"].accent or Color3_fromRGB(45, 45, 45)
         
         local function set_state(new_state)
@@ -1228,6 +1229,7 @@ function UI.sections:section(options)
             UI.flags[toggle.flag] = state
             if toggle.callback then toggle.callback(state) end
         end
+        UI.flag_setters[toggle.flag] = set_state
         
         toggle_button.MouseButton1Click:Connect(function()
             set_state(not state)
@@ -1259,15 +1261,8 @@ function UI.sections:section(options)
             Name = dropdown.name,
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
-            Size = UDim2_new(1, 0, 0, 40),
+            Size = UDim2_new(1, 0, 0, dropdown_options.Description and 56 or 40),
             Parent = section_frame,
-        })
-        
-        local dropdown_list = create_instance("UIListLayout", {
-            Padding = UDim_new(0, 4),
-            FillDirection = Enum.FillDirection.Vertical,
-            VerticalAlignment = Enum.VerticalAlignment.Center,
-            Parent = dropdown_frame,
         })
         
         local dropdown_label = create_instance("TextLabel", {
@@ -1287,6 +1282,7 @@ function UI.sections:section(options)
             Name = "Dropdown",
             BackgroundColor3 = Color3_fromRGB(45, 45, 45),
             BorderSizePixel = 0,
+            Position = UDim2_new(0, 0, 0, 18),
             Size = UDim2_new(1, 0, 0, 20),
             Text = dropdown.default,
             AutoButtonColor = false,
@@ -1303,7 +1299,7 @@ function UI.sections:section(options)
                 TextColor3 = Color3_fromRGB(128, 128, 128),
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Size = UDim2_new(1, 0, 0, 12),
-                Position = UDim2_new(0, 0, 0, 22),
+                Position = UDim2_new(0, 0, 0, 40),
                 FontFace = UI.font,
                 TextSize = 10,
                 TextStrokeTransparency = 0,
@@ -1322,6 +1318,14 @@ function UI.sections:section(options)
         end
         function dropdown_api:Get() return dropdown.default end
         function dropdown_api:SetCallback(cb) dropdown.callback = cb end
+        UI.flag_setters[dropdown.flag] = function(v) dropdown_api:Set(v) end
+        
+        local option_index = table.find(dropdown.options, dropdown.default) or 1
+        dropdown_button.MouseButton1Click:Connect(function()
+            if #dropdown.options == 0 then return end
+            option_index = option_index % #dropdown.options + 1
+            dropdown_api:Set(dropdown.options[option_index])
+        end)
         
         table_insert(section.elements, dropdown_api)
         return dropdown_api
@@ -1344,15 +1348,8 @@ function UI.sections:section(options)
             Name = slider.name,
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
-            Size = UDim2_new(1, 0, 0, 40),
+            Size = UDim2_new(1, 0, 0, slider_options.Description and 56 or 40),
             Parent = section_frame,
-        })
-        
-        local slider_list = create_instance("UIListLayout", {
-            Padding = UDim_new(0, 4),
-            FillDirection = Enum.FillDirection.Vertical,
-            VerticalAlignment = Enum.VerticalAlignment.Center,
-            Parent = slider_frame,
         })
         
         local slider_label = create_instance("TextLabel", {
@@ -1372,6 +1369,7 @@ function UI.sections:section(options)
             Name = "Slider",
             BackgroundColor3 = Color3_fromRGB(45, 45, 45),
             BorderSizePixel = 0,
+            Position = UDim2_new(0, 0, 0, 20),
             Size = UDim2_new(1, 0, 0, 16),
             Text = tostring(slider.default) .. slider.suffix,
             AutoButtonColor = false,
@@ -1379,6 +1377,17 @@ function UI.sections:section(options)
         })
         UI:AttachTheme(slider_button, { BackgroundColor3 = "background" })
         create_instance("UICorner", { Parent = slider_button, CornerRadius = UDim_new(0, 4) })
+        
+        local slider_fill = create_instance("Frame", {
+            Name = "Fill",
+            BackgroundColor3 = Color3_fromRGB(128, 128, 242),
+            BorderSizePixel = 0,
+            Size = UDim2_new(0, 0, 1, 0),
+            ZIndex = 0,
+            Parent = slider_button,
+        })
+        UI:AttachTheme(slider_fill, { BackgroundColor3 = "accent" })
+        create_instance("UICorner", { Parent = slider_fill, CornerRadius = UDim_new(0, 4) })
         
         if slider_options.Description then
             local slider_desc = create_instance("TextLabel", {
@@ -1388,7 +1397,7 @@ function UI.sections:section(options)
                 TextColor3 = Color3_fromRGB(128, 128, 128),
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Size = UDim2_new(1, 0, 0, 12),
-                Position = UDim2_new(0, 0, 0, 22),
+                Position = UDim2_new(0, 0, 0, 40),
                 FontFace = UI.font,
                 TextSize = 10,
                 TextStrokeTransparency = 0,
@@ -1400,13 +1409,48 @@ function UI.sections:section(options)
         
         local slider_api = {}
         function slider_api:Set(value)
+            value = tonumber(value) or value
+            if type(value) == "number" then
+                value = math_clamp(value, slider.min, slider.max)
+                local m = 10 ^ (slider.decimals or 0)
+                value = math_floor(value * m + 0.5) / m
+            end
             slider.default = value
             slider_button.Text = tostring(value) .. slider.suffix
+            local ratio = (value - slider.min) / (slider.max - slider.min)
+            slider_fill.Size = UDim2_new(math_clamp(ratio, 0, 1), 0, 1, 0)
             UI.flags[slider.flag] = value
             if slider.callback then slider.callback(value) end
         end
         function slider_api:Get() return slider.default end
         function slider_api:SetCallback(cb) slider.callback = cb end
+        UI.flag_setters[slider.flag] = function(v) slider_api:Set(v) end
+        
+        slider_api:Set(slider.default)
+        
+        local dragging_slider = false
+        local function update_slider_from_mouse()
+            local mouse_x = UserInputService:GetMouseLocation().X
+            local rel = (mouse_x - slider_button.AbsolutePosition.X) / math.max(slider_button.AbsoluteSize.X, 1)
+            rel = math_clamp(rel, 0, 1)
+            slider_api:Set(slider.min + (slider.max - slider.min) * rel)
+        end
+        slider_button.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging_slider = true
+                update_slider_from_mouse()
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging_slider = false
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging_slider and input.UserInputType == Enum.UserInputType.MouseMovement then
+                update_slider_from_mouse()
+            end
+        end)
         
         table_insert(section.elements, slider_api)
         return slider_api
@@ -1429,51 +1473,49 @@ function UI.sections:section(options)
             Parent = section_frame,
         })
         
-        local colorpicker_list = create_instance("UIListLayout", {
-            Padding = UDim_new(0, 4),
-            FillDirection = Enum.FillDirection.Horizontal,
-            VerticalAlignment = Enum.VerticalAlignment.Center,
-            Parent = colorpicker_frame,
-        })
-        
         local colorpicker_label = create_instance("TextLabel", {
             Name = "Label",
             BackgroundTransparency = 1,
             Text = colorpicker.name,
             TextColor3 = Color3_fromRGB(255, 255, 255),
             TextXAlignment = Enum.TextXAlignment.Left,
-            Size = UDim2_new(1, -20, 0, 16),
+            Size = UDim2_new(1, -30, 0, 16),
+            Position = UDim2_new(0, 0, 0, 2),
             FontFace = UI.font,
             TextSize = UI.font_size,
             TextStrokeTransparency = 0,
             Parent = colorpicker_frame,
         })
         
-        local color_icon = create_instance("TextButton", {
-            Name = "Color",
-            BackgroundColor3 = colorpicker.default,
-            BorderColor3 = Color3_fromRGB(36, 36, 36),
-            BorderSizePixel = 1,
-            Position = UDim2_new(1, -18, 0.5, 0),
-            Size = UDim2_new(0, 16, 0, 16),
-            Text = "",
-            ZIndex = 99,
-            AutoButtonColor = false,
-            Parent = colorpicker_frame,
-        })
-        create_instance("UICorner", { Parent = color_icon, CornerRadius = UDim_new(1, 0) })
+        local picker = UI:NewPicker(
+            colorpicker.name,
+            colorpicker.default,
+            1,
+            colorpicker_frame,
+            1,
+            colorpicker.flag,
+            function(c)
+                UI.flags[colorpicker.flag] = c
+                if colorpicker.callback then colorpicker.callback(c) end
+            end
+        )
         
         UI.flags[colorpicker.flag] = UI:RGBA(colorpicker.default.R * 255, colorpicker.default.G * 255, colorpicker.default.B * 255, 1)
         
         local colorpicker_api = {}
-        function colorpicker_api:Set(color)
+        function colorpicker_api:Set(color, a)
+            if type(color) == "table" then
+                color = Color3_fromHSV(tonumber(color[1]) or 0, tonumber(color[2]) or 0, tonumber(color[3]) or 0)
+            elseif type(color) == "string" then
+                local ok, parsed = pcall(Color3_fromHex, color)
+                if ok and parsed then color = parsed end
+            end
             colorpicker.default = color
-            color_icon.BackgroundColor3 = color
-            UI.flags[colorpicker.flag] = UI:RGBA(color.R * 255, color.G * 255, color.B * 255, 1)
-            if colorpicker.callback then colorpicker.callback(UI:RGBA(color.R * 255, color.G * 255, color.B * 255, 1)) end
+            picker:Set(color, a)
         end
         function colorpicker_api:Get() return colorpicker.default end
         function colorpicker_api:SetCallback(cb) colorpicker.callback = cb end
+        UI.flag_setters[colorpicker.flag] = function(v) colorpicker_api:Set(v) end
         
         table_insert(section.elements, colorpicker_api)
         return colorpicker_api
@@ -1615,6 +1657,21 @@ function UI.sections:section(options)
         end
         
         local listening = false
+        
+        local function set_key(value)
+            local key = value
+            if type(key) == "table" then key = key[1] end
+            if type(key) == "string" then
+                key = Enum.KeyCode[key] or keybind.default
+            end
+            if typeof(key) ~= "EnumItem" then key = keybind.default end
+            keybind.default = key
+            keybind_button.Text = key.Name or "Unknown"
+            UI.flags[keybind.flag] = { Mode = keybind.mode, current = { key.Name } }
+        end
+        UI.flag_setters[keybind.flag] = set_key
+        set_key(keybind.default)
+        
         keybind_button.MouseButton1Click:Connect(function()
             listening = true
             keybind_button.Text = "..."
@@ -1622,8 +1679,7 @@ function UI.sections:section(options)
             input_conn = UserInputService.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.Keyboard then
                     listening = false
-                    keybind.default = input.KeyCode
-                    keybind_button.Text = input.KeyCode.Name
+                    set_key(input.KeyCode)
                     input_conn:Disconnect()
                 end
             end)
@@ -1636,7 +1692,7 @@ function UI.sections:section(options)
         end)
     end
     
-    table_insert(page.sections, section)
+    table_insert(self.sections, section)
     return section
 end
 
