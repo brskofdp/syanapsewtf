@@ -9,7 +9,7 @@
 
 -- // Load UI Library from GitHub Raw Link
 -- Replace this URL with your own GitHub raw link to source.lua
-local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/source.lua", true))()
+local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/brskofdp/syanapsewtf/refs/heads/main/source.lua", true))()
 
 -- // Create Window
 local window = UI:window({
